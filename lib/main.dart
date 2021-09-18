@@ -1,5 +1,9 @@
+import 'package:dio/dio.dart';
+import 'package:first_project/api_client.dart';
+import 'package:first_project/cat.dart';
 import 'package:first_project/detail_info.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -40,15 +44,58 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<String> _items = ['first', 'second', 'third'];
+  List<Cat>? cats;
+  String url =
+      'https://api.thecatapi.com/v1/images/search?breed_ids=beng&include_breeds=true';
 
   TextEditingController _textEditingController = TextEditingController();
 
-  void _addToList(String text) {
+  @override
+  void initState() {
+    super.initState();
+    _getCatsWithRetrofit();
+  }
+
+  Future<void> _getCats() async {
+    var response = await http.get(Uri.parse(url));
     setState(() {
-      _items.add(text);
+      // cats = catFromJson(response.body);
     });
-    _textEditingController.clear();
+  }
+
+  Future<void> _getCatsWithDio() async {
+    Dio dio = Dio();
+
+    dio
+        .get(url)
+        .then((response) => setState(() {
+              // cats = catFromJson(jsonEncode(response.data));
+            }))
+        .catchError((error) {
+      print(error.toString());
+    });
+  }
+
+  Future<void> _getCatsWithRetrofit() async {
+    RestClient restClient = RestClient(Dio());
+    restClient.getCats().then((List<Cat> cats) {
+      setState(() {
+        this.cats = cats;
+      });
+    }).catchError((error) {
+      print(error.toString());
+    });
+  }
+
+  _renderCatImage(Cat cat) {
+    Widget? image = Container();
+    if (cat.url != null) {
+      image = Image.network(
+        cat.url!,
+        fit: BoxFit.fill,
+      );
+    }
+    return image;
   }
 
   @override
@@ -65,36 +112,24 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Expanded(
                 child: ListView(
-                  children: _items.map((item) {
-                    return ListTile(
-                      title: Text(
-                        item,
-                        style: const TextStyle(
-                            color: Colors.deepOrange, fontSize: 16),
-                      ),
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => DetailInfo(title: item)));
-                      },
-                    );
-                  }).toList(),
+                  children: cats?.map((item) {
+                        return ListTile(
+                          leading: _renderCatImage(item),
+                          title: Text(
+                            item.id,
+                            style: const TextStyle(
+                                color: Colors.deepOrange, fontSize: 16),
+                          ),
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) =>
+                                    DetailInfo(title: item.id)));
+                          },
+                        );
+                      }).toList() ??
+                      [],
                 ),
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _textEditingController,
-                    ),
-                  ),
-                  GestureDetector(
-                    child: Icon(Icons.add),
-                    onTap: () {
-                      _addToList(_textEditingController.text);
-                    },
-                  )
-                ],
-              )
             ],
           ),
         )),
