@@ -1,9 +1,8 @@
-import 'package:dio/dio.dart';
-import 'package:first_project/api_client.dart';
 import 'package:first_project/cat.dart';
+import 'package:first_project/cat_store.dart';
 import 'package:first_project/detail_info.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_mobx/flutter_mobx.dart';
 
 void main() {
   runApp(const MyApp());
@@ -44,47 +43,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Cat>? cats;
-  String url =
-      'https://api.thecatapi.com/v1/images/search?breed_ids=beng&include_breeds=true';
-
-  TextEditingController _textEditingController = TextEditingController();
+  CatStore _catStore = CatStore();
 
   @override
   void initState() {
     super.initState();
-    _getCatsWithRetrofit();
-  }
-
-  Future<void> _getCats() async {
-    var response = await http.get(Uri.parse(url));
-    setState(() {
-      // cats = catFromJson(response.body);
-    });
-  }
-
-  Future<void> _getCatsWithDio() async {
-    Dio dio = Dio();
-
-    dio
-        .get(url)
-        .then((response) => setState(() {
-              // cats = catFromJson(jsonEncode(response.data));
-            }))
-        .catchError((error) {
-      print(error.toString());
-    });
-  }
-
-  Future<void> _getCatsWithRetrofit() async {
-    RestClient restClient = RestClient(Dio());
-    restClient.getCats().then((List<Cat> cats) {
-      setState(() {
-        this.cats = cats;
-      });
-    }).catchError((error) {
-      print(error.toString());
-    });
+    _catStore.fetchNewCat();
   }
 
   _renderCatImage(Cat cat) {
@@ -104,6 +68,10 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _catStore.fetchNewCat,
+        child: Icon(Icons.plus_one),
+      ),
       body: SafeArea(
         child: Center(
             child: Padding(
@@ -111,24 +79,25 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             children: [
               Expanded(
-                child: ListView(
-                  children: cats?.map((item) {
-                        return ListTile(
-                          leading: _renderCatImage(item),
-                          title: Text(
-                            item.id,
-                            style: const TextStyle(
-                                color: Colors.deepOrange, fontSize: 16),
-                          ),
-                          onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    DetailInfo(title: item.id)));
-                          },
-                        );
-                      }).toList() ??
-                      [],
-                ),
+                child: Observer(builder: (context) {
+                  return ListView(
+                    children: _catStore.filteredCats.map((item) {
+                      return ListTile(
+                        leading: _renderCatImage(item),
+                        title: Text(
+                          item.id,
+                          style: const TextStyle(
+                              color: Colors.deepOrange, fontSize: 16),
+                        ),
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  DetailInfo(title: item.id)));
+                        },
+                      );
+                    }).toList(),
+                  );
+                }),
               ),
             ],
           ),
