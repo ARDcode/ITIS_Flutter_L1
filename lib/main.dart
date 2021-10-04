@@ -1,33 +1,32 @@
+import 'package:first_project/bloc/cat_bloc.dart';
+import 'package:first_project/bloc/theme_bloc.dart';
 import 'package:first_project/cat.dart';
 import 'package:first_project/cat_store.dart';
 import 'package:first_project/detail_info.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MultiBlocProvider(providers: [
+    BlocProvider(create: (_) => CatBloc()),
+    BlocProvider(create: (_) => ThemeBloc()),
+  ], child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
+  // final Store<CatsState> store = Store<CatsState>(
+  //   appReducer,
+  //   /* Function defined in the reducers file */
+  //   initialState: CatsState.initial(),
+  // );
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
+      theme: context.watch<ThemeBloc>().state,
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -48,7 +47,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _catStore.fetchNewCat();
+    // _catStore.fetchNewCat();
+    // context.read<CatBloc>().getCats();
   }
 
   _renderCatImage(Cat cat) {
@@ -67,9 +67,19 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          GestureDetector(
+            child: Icon(Icons.error),
+            onTap: () {
+              context.read<ThemeBloc>().setTheme(ThemeData.dark());
+            },
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _catStore.fetchNewCat,
+        onPressed: () {
+          context.read<CatBloc>().getCats();
+        },
         child: Icon(Icons.plus_one),
       ),
       body: SafeArea(
@@ -79,9 +89,10 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             children: [
               Expanded(
-                child: Observer(builder: (context) {
+                child:
+                    BlocBuilder<CatBloc, List<Cat>>(builder: (context, cats) {
                   return ListView(
-                    children: _catStore.filteredCats.map((item) {
+                    children: cats.map((item) {
                       return ListTile(
                         leading: _renderCatImage(item),
                         title: Text(
