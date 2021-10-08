@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:first_project/api_client.dart';
-import 'package:first_project/cat.dart';
+import 'package:first_project/module/home/api_client.dart';
+import 'package:first_project/module/home/model/cat.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CatBloc extends Cubit<List<Cat>> {

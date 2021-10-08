@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:first_project/cat.dart';
+import 'package:first_project/module/home/model/cat.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'api_client.g.dart';

@@ -1,4 +1,4 @@
-import 'package:first_project/cat.dart';
+import 'package:first_project/module/home/model/cat.dart';
 
 class CatsState {
   final List<Cat> cats;
