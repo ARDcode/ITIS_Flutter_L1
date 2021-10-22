@@ -13,10 +13,10 @@ class HomeModule extends Module {
             child: (context, args) => MyHomePage(
                   title: 'HomeModule',
                 )),
-        ChildRoute('/detail/:title',
+        ChildRoute('/detail',
             child: (context, args) => DetailInfo(
-                  title: args.params['title'],
+                  cat: args.data,
                 ),
-            transition: TransitionType.downToUp),
+            transition: TransitionType.fadeIn),
       ];
 }

@@ -35,11 +35,11 @@ mixin _$CatStore on _CatStore, Store {
   final _$_CatStoreActionController = ActionController(name: '_CatStore');
 
   @override
-  void fetchNewCat() {
+  void fetchNewCat({Function? onAdd}) {
     final _$actionInfo =
         _$_CatStoreActionController.startAction(name: '_CatStore.fetchNewCat');
     try {
-      return super.fetchNewCat();
+      return super.fetchNewCat(onAdd: onAdd);
     } finally {
       _$_CatStoreActionController.endAction(_$actionInfo);
     }

@@ -18,20 +18,24 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   CatStore _catStore = Modular.get<CatStore>();
+  final GlobalKey<AnimatedListState> listKey = GlobalKey<AnimatedListState>();
 
   double scale = 1;
 
   @override
   void initState() {
     super.initState();
-    _catStore.fetchNewCat();
+    _catStore.fetchNewCat(onAdd: () {
+      listKey.currentState!.insertItem(_catStore.cats.length - 1);
+    });
     initFirebase();
   }
 
   Future<void> initFirebase() async {
-    await Firebase.initializeApp();
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    messaging.getToken().then((token) => print(token));
+    Firebase.initializeApp().then((_) {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      messaging.getToken().then((token) => print(token));
+    }).catchError((_) {});
   }
 
   _renderCatImage(Cat cat) {
@@ -59,7 +63,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _catStore.fetchNewCat();
+          _catStore.fetchNewCat(onAdd: () {
+            listKey.currentState!.insertItem(_catStore.cats.length - 1);
+          });
         },
         child: Icon(Icons.plus_one),
       ),
@@ -70,28 +76,38 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             children: [
               Expanded(child: Observer(builder: (context) {
-                return ListView(
-                  children: _catStore.cats.map((item) {
-                    return ListTile(
-                      leading: _renderCatImage(item),
-                      title: Text(
-                        item.id,
-                      )
-                          .textColor(Colors.blueAccent)
-                          .fontSize(16)
-                          .fontWeight(FontWeight.bold)
-                          .scale(all: scale, animate: true)
-                          .animate(
-                              Duration(milliseconds: 1000), Curves.bounceInOut),
-                      onTap: () {
-                        // setState(() {
-                        //   scale = 1.2;
-                        // });
-                        Modular.to.pushNamed('/detail/${item.id}');
-                      },
-                    );
-                  }).toList(),
-                );
+                return Observer(builder: (context) {
+                  return AnimatedList(
+                    key: listKey,
+                    initialItemCount: _catStore.cats.length,
+                    itemBuilder: (BuildContext context, int index,
+                        Animation<double> animation) {
+                      Cat item = _catStore.cats[index];
+                      return ScaleTransition(
+                        scale: animation,
+                        child: ListTile(
+                          key: Key(item.id),
+                          leading: _renderCatImage(item),
+                          title: Text(
+                            item.id,
+                          )
+                              .textColor(Colors.blueAccent)
+                              .fontSize(16)
+                              .fontWeight(FontWeight.bold)
+                              .scale(all: scale, animate: true)
+                              .animate(Duration(milliseconds: 1000),
+                                  Curves.bounceInOut),
+                          onTap: () {
+                            // setState(() {
+                            //   scale = 1.2;
+                            // });
+                            Modular.to.pushNamed('/detail', arguments: item);
+                          },
+                        ),
+                      );
+                    },
+                  );
+                });
               })),
             ],
           ),

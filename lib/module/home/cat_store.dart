@@ -18,10 +18,13 @@ abstract class _CatStore with Store {
   ObservableList<Cat> cats = ObservableList.of([]);
 
   @action
-  void fetchNewCat() {
+  void fetchNewCat({Function? onAdd}) {
     RestClient restClient = RestClient(Dio());
     restClient.getCats().then((List<Cat> cats) {
       this.cats.add(cats[0]);
+      if (onAdd != null) {
+        onAdd();
+      }
     }).catchError((error) {
       print(error.toString());
     });
