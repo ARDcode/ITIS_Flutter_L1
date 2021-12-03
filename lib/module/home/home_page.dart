@@ -76,38 +76,33 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             children: [
               Expanded(child: Observer(builder: (context) {
-                return Observer(builder: (context) {
-                  return AnimatedList(
-                    key: listKey,
-                    initialItemCount: _catStore.cats.length,
-                    itemBuilder: (BuildContext context, int index,
-                        Animation<double> animation) {
-                      Cat item = _catStore.cats[index];
-                      return ScaleTransition(
-                        scale: animation,
-                        child: ListTile(
-                          key: Key(item.id),
-                          leading: _renderCatImage(item),
-                          title: Text(
-                            item.id,
-                          )
-                              .textColor(Colors.blueAccent)
-                              .fontSize(16)
-                              .fontWeight(FontWeight.bold)
-                              .scale(all: scale, animate: true)
-                              .animate(Duration(milliseconds: 1000),
-                                  Curves.bounceInOut),
-                          onTap: () {
-                            // setState(() {
-                            //   scale = 1.2;
-                            // });
-                            Modular.to.pushNamed('/detail', arguments: item);
-                          },
-                        ),
-                      );
-                    },
-                  );
-                });
+                return ListView.builder(
+                  key: listKey,
+                  itemCount: _catStore.cats.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    Cat item = _catStore.cats[index];
+                    return ListTile(
+                      key: Key('list_$index'),
+                      leading: _renderCatImage(item),
+                      title: Text(
+                        item.id,
+                      )
+                          .textColor(Colors.blueAccent)
+                          .fontSize(16)
+                          .fontWeight(FontWeight.bold)
+                          .scale(all: scale, animate: true)
+                          .animate(
+                              Duration(milliseconds: 1000), Curves.bounceInOut),
+                      onTap: () {
+                        // setState(() {
+                        //   scale = 1.2;
+                        // });
+                        // PluginItis.showToast('Hello', 'Poka');
+                        Modular.to.pushNamed('/detail', arguments: item);
+                      },
+                    );
+                  },
+                );
               })),
             ],
           ),

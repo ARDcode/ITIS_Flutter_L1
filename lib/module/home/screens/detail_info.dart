@@ -60,15 +60,21 @@ class _DetailInfoState extends State<DetailInfo>
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Center(
-            child: AnimatedBuilder(
-                animation: _myAnimation,
-                builder: (context, _) {
-                  return InteractiveViewer(
-                      child: Image.network(widget.cat.url ?? ''));
-                })),
-      ),
+          padding: const EdgeInsets.all(32.0),
+          child: Container(
+            color: Colors.red,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text('123'),
+                Text('123'),
+                Text('123'),
+                Text('123'),
+                Text('123'),
+                Text('123'),
+              ],
+            ),
+          )),
     );
   }
 }
